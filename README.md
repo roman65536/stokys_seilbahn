@@ -1,0 +1,1 @@
+# stokys_seilbahn
