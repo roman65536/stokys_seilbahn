@@ -18,6 +18,7 @@ uint16_t EEMEM NonVolatileSEND_CMD_CNT = 2;
 uint16_t EEMEM NonVolatileTOWER_STOP = 1465;
 uint16_t EEMEM NonVolatileFAHR_CNT = 4 ;
 uint16_t EEMEM NonVolatilePRESS_CNT = 0;
+uint16_t EEMEM NonVolatileRUN_CNT=0;
 
 
 
@@ -40,6 +41,7 @@ int SEND_CMD_CNT;
 int TOWER_STOP;
 int FAHR_CNT;
 int PRESS_CNT;
+int RUN_CNT;
 
 #define SET_SERVO(b,se,st) (((b&0xf)<<4 ) | ((se&0x3) <<2) | st)
 #define SERVO_OPEN 2
@@ -59,7 +61,7 @@ SEND_CMD_CNT = eeprom_read_word(&NonVolatileSEND_CMD_CNT);
 TOWER_STOP = eeprom_read_word(&NonVolatileTOWER_STOP);
  FAHR_CNT = eeprom_read_word(&NonVolatileFAHR_CNT);
  PRESS_CNT = eeprom_read_word(&NonVolatilePRESS_CNT);
-
+ RUN_CNT = eeprom_read_word(&NonVolatileRUN_CNT);
 }
 
 /* http://www.cs.mun.ca/~rod/Winter2007/4723/notes/serial/serial.html */
@@ -235,7 +237,8 @@ void readvar(int argn, char *argc[])
   printf_P(PSTR("Sending Commands[cmdcnt] %d times\n"),SEND_CMD_CNT);
   printf_P(PSTR("Tower Stop[maststop] at %d position\n"),TOWER_STOP);
   printf_P(PSTR("Runs per button[fahrtcnt] %d\n"),FAHR_CNT);
-  printf_P(PSTR("Total runs %d\n"),PRESS_CNT);
+  printf_P(PSTR("Total Button Press %d\n"),PRESS_CNT);
+  printf_P(PSTR("Total runs %d\n"),RUN_CNT);
 }
 
 void drive(int argn, char*argc[])
@@ -707,10 +710,10 @@ Warte bis Start gedrückt wird
 	  eeprom_write_word (&NonVolatilePRESS_CNT,  PRESS_CNT);
 
 	  /*
-		Fahre 4 mal insgesammt 
+		Fahre (wie im eeprom konfiguriert) mal insgesammt 
 	  */
 	  
-	  for(a=0;a<4;) {
+	  for(a=0;a<FAHR_CNT;) {
 		unsigned char pinc=PINC;
 
 		/* beim Tower längsämer fahren */
@@ -758,7 +761,8 @@ Warte bis Start gedrückt wird
 			close_doors();
 			//  }
 		  a++;
-	
+		  RUN_CNT++;
+		  eeprom_write_word (&NonVolatileRUN_CNT,  RUN_CNT);
 		}
 	  
 		if(((pinc & TOP_L) == 0) && (drive == DOWN_D)) {          // testen, is Gondel Links auf Endschalter ??
@@ -774,7 +778,8 @@ Warte bis Start gedrückt wird
 			close_doors();
 			// }
 		  a++;
-	
+		   RUN_CNT++;
+		  eeprom_write_word (&NonVolatileRUN_CNT,  RUN_CNT);
 		}
 	  }
 	  set_mot(speed*drive);                           // setze die geschwindigkeit unter berücksichtigung der Richtung
