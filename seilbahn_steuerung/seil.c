@@ -411,7 +411,7 @@ void shell()
   int command;
   int i;
 
-  printf_P(PSTR("Debug shell\nBe very carefull what you are doing!!\n"));
+  printf_P(PSTR("Debug shell\nBe very carefull what you are doing!! Beat!! Lucas you too!!\n"));
 	  for (;;) {
 		printf_P(PSTR("\n>"));
 		fgets(buf,80,stdin);
