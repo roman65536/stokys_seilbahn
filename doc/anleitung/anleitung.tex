@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage[left=1cm,right=1cm,top=1.5cm,bottom=1.5cm,includeheadfoot]{geometry}
+%%\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[table]{xcolor}
+\usepackage{nofloat}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{pict2e}
+\usepackage{varioref}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{luacode}
+\usepackage{subcaption}
+\usepackage[pdfborderstyle={/S/U/W 1},colorlinks=true, linkcolor=blue]{hyperref}
+\usepackage{cleveref}
+\usepackage{wasysym}
+\usepackage{longtable}
+\usepackage{tikz}
+\usepackage{circuitikz}
+
+\newcommand{\myfig}[3]{%
+    \begin{nofloat}{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{#1}
+        \caption{#2}
+        \label{#3}
+    \end{nofloat}
+}
+
+\hypersetup{
+ pdftitle={Bahnsteuerung Inbetriebnahme},
+ pdfauthor={Roman Pollak},
+ pdfsubject={Bahnsteuerung Inbetriebnahme}
+}
+
+\pagestyle{fancyplain}
+\fancyhf{}
+\rhead{\vspace{.1cm}{\includegraphics[scale=.3]{Pollak_eng}}}
+
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+
+
+\begin{luacode*}
+function dot_write(text)
+tmp_name=os.tmpname()
+--tex.print(" Roman 123"..tmp_name)
+f=io.open(tmp_name..".dot",'w')
+f:write(text)
+f:flush()
+f:close()
+os.execute("dot "..tmp_name..".dot -Tpdf -o"..tmp_name..".pdf")
+--#tex.print("\\newline{}\\includegraphics[width=.5\\textwidth]{"..tmp_name..".pdf}")
+tex.print("\\includegraphics[width=.5\\textwidth]{"..tmp_name..".pdf}")
+end
+\end{luacode*}
+
+
+
+
+\title{\Huge{Bahnsteuerung Inbetriebnahme / Anleitung}}
+\author{Roman Pollak} 
+\date{\today}
+\maketitle
+\rhead{\thepage}
+
+\tableofcontents
+
+\newpage
+
+\section{Inbetriebnahme der Bahn}
+
+\begin{nofloat}{figure}
+        \centering
+\begin{luacode*}
+  dot_write([[ digraph G {
+
+    subgraph cluster_1 {
+    node [style=filled,shape=box];
+    b0 -> b01 -> b1  -> b2 -> b3 -> b4 -> b5 -> b6 -> b7 -> b8 -> b9 -> b10 -> b11;
+#    b3 -> b4 [label="  Messung Gut"];
+#    b3 -> b5 [label="  Messung Nicht Gut"];
+#    b5 -> b3;
+#    b4 -> b44;
+#    b44 -> b6;
+#    color=blue
+  }
+  
+  b0 [label="Bahn mechanisch Aufbauen"]
+  b01 [label="Tragseile spannen\nBeachten das keine Kurzschlüsse entstehen\n Kabinen noch nicht aufhängen!"]
+  b1 [label="Kabel an die Steuerung anschliessen (wenn nicht angeschlossen)"]
+  b2 [label="Stromversorgung der Kabinen (Seil) ausstecken! "]
+  b3 [label="Steuerung einschalten und die Debug Taste drucken cca 30 sekunden.\nUSB Dongel erst nach dem Einschalten in PC einstecken!!"]
+  b4 [label="mit 'readport' überprüfen der Endschalter und Tasten"]
+  b5 [label="mit 'drive 50' danach mit 'checkpos' überprüfen, ob Lichschranke richtig funktioniert\nund die Schrite gezählt werden"]
+  b6 [label="Steuerung ausschalten,Motorkabel der Steuerung ausstecken,USB Dongle ausstecken\nMotoren mit Netzteil verbinden."]
+  b7 [label="Kabinen einhängen\nüberprüfen mit Netzteil ob Kabinen gut fahren."]
+  b8 [label="Stromversorgung der Kabinen (Seil) anschliessen\nMotoren an Steuerung anschliessen\nden Fahrtschalter auf 'Hier' stellen."]
+  b9 [label="Nach dem einschalten der Steuerung sollte ein Test alles Servo von der Steuerung durchgeführt werden.\nWenn nicht, evtl ist USB Dongle noch mit PC angeschlossen"]
+  b10 [label="Von der Tallstation aus sollte die Linke Kabine langsam nach unten fahren bis zum Endschalter.\nWenn die Rechte Kabine nach unten fährt, überprüfen ob der Fahrtschalter auf 'Hier' steht"]
+  b11 [label="Start Taste betätigen und Gute Fahrt!!"]
+  
+  
+  
+}
+]])
+
+\end{luacode*}
+\caption{Ablauf der Installation, folgend Details zu der Installation}
+        \label{fig:mess}
+\end{nofloat}
+
+
+
+
+
+
+%%\newpage
+
+\section{Anschlüsse der Steuerung}
+
+\myfig{controller_new}{Anschlüsse der neuen Steuerung}{}
+\myfig{controller}{Anschlüsse der alten Steuerung}{}
+\myfig{subcontroller}{Anschlüsse an der Kabinensteuerung}{}
+
+\section{ID's der Komponenten}
+\myfig{Bahn_def}{ID's der Kabinen-/Towersteuerung}{}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Lokation}&\textbf{Servo ID} & \textbf{Servo ID im C Code}\\
+        \hline
+        Innenseite & 1 & 0\\
+        Tower Rechts & &\\
+        \hline
+        Aussenseite & 2 & 1\\
+        Tower Links & &\\
+        \hline
+       
+    \end{tabular}
+\end{table}
+
+Mit "s2servo" ist es möglich im Debug shell servos einzeln anzusteuern. zb mit "s2servo 1 0 open" sollte auf der rechten Kabine die Innentüre aufgehen. Mit "s2servo 1 0 close" wieder zu gehen.
+
+
+\section{Anhang}
+\subsection{Funktionsweise der Übertragung}
+\myfig{Comm}{Seriale Übertragung zu den Kabinen und Tower}{}
+\myfig{Comm_princip}{Funktionsweise der Detektierung}{}
+
+
+\section{Anmerkung}
+Gefunden Fehler könnt Ihr behalten.
+
+
+\end{document}
