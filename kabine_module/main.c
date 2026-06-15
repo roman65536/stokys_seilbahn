@@ -7,6 +7,9 @@ The softuart code is take from Martin Thomas
 
 */
 
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
 #define WITH_STDIO_DEMO   1 /* 1: enable, 0: disable */
 
 
@@ -29,9 +32,9 @@ The softuart code is take from Martin Thomas
 
 
 void uart_putc(unsigned char ch);
-unsigned char uart_getc();
+unsigned char uart_getc(void );
 void uart_init(long baud);
-unsigned char  uart_kbhit();
+unsigned char  uart_kbhit(void);
 
 
 
@@ -158,7 +161,6 @@ volatile unsigned int end_b;
 ISR(ANA_COMP1_vect)
 {
   a_intcnt++;
-
 }
 
 int main(void)
@@ -215,10 +217,19 @@ int main(void)
 		if((ch & 0xf0) == (DEV_ID<<4) ) {
 		  unsigned char servo = (ch & 0x0c) >> 2;
 		  if((ch & 1) == 1) {
+#pragma message "ID is " XSTR(DEV_ID)
+#if DEV_ID < 3
+			set2pos(0,servo+1,600,100);
+#else
 			set2pos(0,servo+1,600,300);
+#endif
 		  }
 		  if((ch & 2) == 2) {
+#if DEV_ID < 3
 			set2pos(0,servo+1,0,300);
+#else
+			set2pos(0,servo+1,0,300);
+#endif
 		  }
 			 
 		}
@@ -315,7 +326,7 @@ while (!(UCSR0A & (1 << TXC0)));
 }
 
 
-unsigned char uart_getc()
+unsigned char uart_getc(void )
 {
  
  unsigned char ch;
@@ -324,15 +335,11 @@ unsigned char uart_getc()
  return(ch);
 }
 
-unsigned char  uart_kbhit()
+unsigned char  uart_kbhit(void)
 {
 if (bit_is_clear(UCSR0A,RXC0)==1) return 0;
  else return 1;
 }
-
-
-
-
 
 
 void prints( unsigned char * ch)

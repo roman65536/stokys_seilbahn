@@ -36,7 +36,7 @@
 
 \pagestyle{fancyplain}
 \fancyhf{}
-\rhead{\vspace{.1cm}{\includegraphics[scale=.3]{Pollak_eng}}}
+\lhead{\vspace{.1cm}{\includegraphics[scale=.2]{Pollak_eng}}}
 
 
 \setlength{\parindent}{0pt}
@@ -123,12 +123,12 @@ end
 
 \section{Anschlüsse der Steuerung}
 
-\myfig{controller_new}{Anschlüsse der neuen Steuerung}{}
-\myfig{controller}{Anschlüsse der alten Steuerung}{}
+\myfig{controller_new}{Anschlüsse der neuen Steuerung}{fig:ctrl}
+\myfig{seilbahn}{Anschlüsse der alten Steuerung}{}
 \myfig{subcontroller}{Anschlüsse an der Kabinensteuerung}{}
-
+ 
 \section{ID's der Komponenten}
-\myfig{Bahn_def}{ID's der Kabinen-/Towersteuerung}{}
+\myfig{Bahn_def}{ID's der Kabinen-/Towersteuerung}{fig:id}
 
 \begin{table}[h]
     \centering
@@ -146,7 +146,86 @@ end
     \end{tabular}
 \end{table}
 
-Mit "s2servo" ist es möglich im Debug shell servos einzeln anzusteuern. zb mit "s2servo 1 0 open" sollte auf der rechten Kabine die Innentüre aufgehen. Mit "s2servo 1 0 close" wieder zu gehen.
+\section{Debug Shell}
+Durch drucken der ``Debug Shell'' Taste \autoref{fig:ctrl}, gelangt man in debug shell.
+
+\begin{verbatim}
+Debug shell                                                                                         
+Be very carefull what you are doing!! Beat!! Lucas you too!!                                        
+                                                                                                    
+>             
+\end{verbatim}
+
+Mit ``help'' zeigt die shell alle möglichen Befehle.
+\begin{verbatim}
+>help
+drive 
+set 
+readvar 
+readport 
+checkpos 
+s2servo 
+drive2 
+home 
+testdoor 
+help 
+? 
+\end{verbatim}
+
+Mit ``readvar'' werden die konfigurierbare Parameter angezeigt und deren im eeprom gespeicherten Wert. 
+
+\begin{verbatim}
+>readvar
+SPEED MIN[minspeed] 55 MAX[maxspeed] 255
+Sending Commands[cmdcnt] 2 times
+Tower Stop[maststop] at 1465 position
+Runs per button[fahrtcnt] 4
+Total Button Press 16
+Total runs 60
+\end{verbatim}
+Die Angaben in den eckigen Klammern, sind die Name für den ``set'' Befehl! Im folgenden Beispiel, wird die Anzahl der Fahrten per Knopfdruck auf 2 gesetzt. Diese Wert wird gleich im eeprom gespeichert und von der Software gleich verwendet (kein reboot notwendig).
+
+\begin{verbatim}
+>set fahrtcnt 2
+SPEED MIN[minspeed] 55 MAX[maxspeed] 255
+Sending Commands[cmdcnt] 2 times
+Tower Stop[maststop] at 1465 position
+Runs per button[fahrtcnt] 2
+Total Button Press 16
+Total runs 60
+\end{verbatim}
+
+Mit ``readport'' kann man die Funktionsweise der Endschalter, der ``Go'' Taste, überprüfen. Hier ist zu beachten, dass der Wert beim betätigen der entsprechenden Schalter, ändern soll!
+
+\begin{verbatim}
+>readport
+Portc is 3d
+Portc is 3d
+Portc is 3d
+..
+Portc is 3d
+Portc is 3d
+Portc is 3c
+Portc is 3c
+..
+Portc is 3c
+Portc is 3c
+Portc is 3d
+Portc is 3d
+..
+Portc is 3d
+Portc is 3d
+Portc is 39
+Portc is 39
+\end{verbatim}
+
+Durch drucken irgendeine Taste (der so gennante ``Any Key'') wird die Ausgabe wieder gestoppt.
+
+
+
+Mit ``s2servo'' ist es möglich im Debug shell servos einzeln anzusteuern. zb mit ``s2servo 1 0 open'' sollte auf der rechten Kabine die Innentüre aufgehen. Mit ``s2servo 1 0 close'' wieder zu gehen.
+
+
 
 
 \section{Anhang}
@@ -154,9 +233,22 @@ Mit "s2servo" ist es möglich im Debug shell servos einzeln anzusteuern. zb mit 
 \myfig{Comm}{Seriale Übertragung zu den Kabinen und Tower}{}
 \myfig{Comm_princip}{Funktionsweise der Detektierung}{}
 
+\subsection{Programmierung der Kontroller mit Avrdude}
+Die Kontroller kann man mit dem avrdude programmieren resp flashen. Flashen der Haupsteuerung erfolgt mit folgenden Befehl:
+\begin{verbatim}
+#avrdude -c usbtiny -p m168 -U flash:w:seil.hex -U eeprom:w:seil.eep
+\end{verbatim}
+Dabei werden alle gespeicherte Werte leider überschrieben! \\[1cm]
+Programmierung der subkontroller ist etwas komplexer, da jeder subkontroller seine eigene ID besitzt. Diese ist im programm konfiguriert.
+Das entsprechende ``Makefile'' des subkontrollers, erzeugt die hex dateien für alle drei ID. Die entsprechenden ID's kann man der \autoref{fig:id} entnehmen.
+\begin{verbatim}
+#avrdude -c usbtiny -p t841 -U flash:w:main_2.hex
+\end{verbatim}
+Im oberen Beispiel ist wird der Subkontroller für mit der ID 2 geflashed. ``t841'' ist die Bezeichnung des ATtiny841 im avrdude.
+
 
 \section{Anmerkung}
-Gefunden Fehler könnt Ihr behalten.
+Gefunde Fehler könnt Ihr behalten.
 
 
 \end{document}
