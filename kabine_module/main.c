@@ -226,7 +226,7 @@ int main(void)
 		  }
 		  if((ch & 2) == 2) {
 #if DEV_ID < 3
-			set2pos(0,servo+1,0,300);
+			set2pos(0,servo+1,0,100);
 #else
 			set2pos(0,servo+1,0,300);
 #endif
